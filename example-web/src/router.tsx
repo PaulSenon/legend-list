@@ -65,21 +65,102 @@ function SidebarLayout() {
     const pathname = useRouterState({ select: (s) => s.location.pathname });
     const SIDEBAR_WIDTH = 260;
     const CONTENT_OFFSET = SIDEBAR_WIDTH + 28;
+    const MOBILE_BREAKPOINT = 900;
     const activeExample = EXAMPLES.find((example) => `/${example.path}` === pathname);
     const isWindowScrollExample = !!activeExample?.usesWindowScroll;
+    const [windowWidth, setWindowWidth] = React.useState(() => window.innerWidth);
+    const [isSidebarOpen, setIsSidebarOpen] = React.useState(() => window.innerWidth > MOBILE_BREAKPOINT);
+    const isMobile = windowWidth <= MOBILE_BREAKPOINT;
+
+    React.useEffect(() => {
+        const handleResize = () => {
+            setWindowWidth(window.innerWidth);
+        };
+
+        window.addEventListener("resize", handleResize);
+        return () => {
+            window.removeEventListener("resize", handleResize);
+        };
+    }, []);
+
+    React.useEffect(() => {
+        setIsSidebarOpen(!isMobile);
+    }, [isMobile]);
+
+    React.useEffect(() => {
+        if (isMobile) {
+            setIsSidebarOpen(false);
+        }
+    }, [isMobile, pathname]);
+
+    const layoutPadding = isMobile ? 0 : 16;
+    const contentTopPadding = isMobile ? 76 : 16;
 
     return (
-        <div style={{ minHeight: "100vh" }}>
+        <div
+            style={{
+                minHeight: "100svh",
+                position: "relative",
+            }}
+        >
+            {isMobile ? (
+                <>
+                    <button
+                        onClick={() => setIsSidebarOpen((value) => !value)}
+                        style={{
+                            alignItems: "center",
+                            background: "#fff",
+                            border: "1px solid #ddd",
+                            borderRadius: 999,
+                            boxShadow: "0 10px 24px rgba(15, 23, 42, 0.12)",
+                            cursor: "pointer",
+                            display: "inline-flex",
+                            fontSize: 14,
+                            fontWeight: 600,
+                            gap: 8,
+                            left: 16,
+                            padding: "10px 14px",
+                            position: "fixed",
+                            top: 16,
+                            zIndex: 30,
+                        }}
+                        type="button"
+                    >
+                        <span style={{ fontSize: 16, lineHeight: 1 }}>{isSidebarOpen ? "x" : "="}</span>
+                        Examples
+                    </button>
+                    {isSidebarOpen ? (
+                        <button
+                            aria-label="Close navigation menu"
+                            onClick={() => setIsSidebarOpen(false)}
+                            style={{
+                                background: "rgba(15, 23, 42, 0.34)",
+                                border: 0,
+                                cursor: "pointer",
+                                inset: 0,
+                                position: "fixed",
+                                zIndex: 10,
+                            }}
+                            type="button"
+                        />
+                    ) : null}
+                </>
+            ) : null}
             <aside
                 style={{
+                    background: "#fff",
                     borderRight: "1px solid #eee",
                     bottom: 16,
-                    left: 16,
+                    boxShadow: isMobile ? "0 20px 48px rgba(15, 23, 42, 0.18)" : "none",
+                    left: isMobile ? 0 : 16,
                     overflowY: "auto",
-                    paddingRight: 12,
+                    padding: isMobile ? "88px 16px 20px" : "0 12px 0 0",
                     position: "fixed",
-                    top: 16,
+                    top: isMobile ? 0 : 16,
+                    transform: isMobile ? (isSidebarOpen ? "translateX(0)" : "translateX(-100%)") : "translateX(0)",
+                    transition: "transform 180ms ease",
                     width: SIDEBAR_WIDTH,
+                    zIndex: 20,
                 }}
             >
                 <h1 style={{ marginBottom: 12, marginTop: 0 }}>Legend List Web Example</h1>
@@ -115,11 +196,12 @@ function SidebarLayout() {
                 style={{
                     display: "flex",
                     flexDirection: "column",
-                    marginLeft: CONTENT_OFFSET,
+                    marginLeft: isMobile ? 0 : CONTENT_OFFSET,
                     ...(isWindowScrollExample
-                        ? { minHeight: "calc(100vh - 32px)" }
-                        : { height: "calc(100vh - 32px)", overflow: "hidden" }),
+                        ? { minHeight: `calc(100svh - ${contentTopPadding + layoutPadding}px)` }
+                        : { height: `calc(100svh - ${contentTopPadding + layoutPadding}px)`, overflow: "hidden" }),
                     minWidth: 0,
+                    padding: `${contentTopPadding}px ${layoutPadding}px ${layoutPadding}px`,
                 }}
             >
                 <Outlet />
