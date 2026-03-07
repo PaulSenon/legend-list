@@ -1,13 +1,22 @@
 import React from "react";
 
 import { LegendList } from "@legendapp/list/react";
+import {
+    getDefaultExampleWrapperStyle,
+    getDefaultLegendListStyle,
+    getStickyExampleChromeStyle,
+    isWindowScrollMode,
+    useExampleScrollMode,
+} from "./scrollMode";
 import type { Country } from "./utils";
 import { useCountries } from "./utils";
 
 export default function CountriesExample() {
+    const { effectiveMode } = useExampleScrollMode();
     const { countriesData, load } = useCountries();
     const [query, setQuery] = React.useState("");
     const [selectedId, setSelectedId] = React.useState<string | undefined>();
+    const useWindowScroll = isWindowScrollMode(effectiveMode);
 
     React.useEffect(() => {
         load();
@@ -19,8 +28,14 @@ export default function CountriesExample() {
     }, [countriesData, query]);
 
     return (
-        <div style={{ display: "flex", flex: 1, flexDirection: "column", gap: 8, minHeight: 0 }}>
-            <div>
+        <div style={getDefaultExampleWrapperStyle(effectiveMode)}>
+            <div
+                style={{
+                    ...getStickyExampleChromeStyle(effectiveMode),
+                    background: useWindowScroll ? "rgba(255, 255, 255, 0.96)" : undefined,
+                    paddingBottom: useWindowScroll ? 8 : 0,
+                }}
+            >
                 <input
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Search country or code..."
@@ -28,7 +43,7 @@ export default function CountriesExample() {
                         background: "#f5f5f5",
                         border: "1px solid #ddd",
                         borderRadius: 8,
-                        fontSize: 14,
+                        fontSize: 16,
                         height: 36,
                         padding: "0 10px",
                         width: 300,
@@ -39,7 +54,7 @@ export default function CountriesExample() {
             <LegendList<Country>
                 data={filtered}
                 estimatedItemSize={60}
-                estimatedListSize={{ height: 520, width: 0 }}
+                estimatedListSize={{ height: useWindowScroll ? window.innerHeight : 520, width: 0 }}
                 extraData={selectedId}
                 keyExtractor={(item) => item?.id}
                 recycleItems
@@ -75,7 +90,8 @@ export default function CountriesExample() {
                         <div style={{ color: "#666", fontSize: 12 }}>({item.id})</div>
                     </button>
                 )}
-                style={{ borderRadius: 8, flex: 1, minHeight: 0 }}
+                style={getDefaultLegendListStyle(effectiveMode, { borderRadius: 8 })}
+                useWindowScroll={useWindowScroll}
                 waitForInitialLayout={false}
             />
         </div>

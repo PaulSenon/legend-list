@@ -1,12 +1,16 @@
 import React from "react";
 
 import { LegendList } from "@legendapp/list/react";
+import { getDefaultLegendListStyle, isWindowScrollMode, useExampleScrollMode } from "./scrollMode";
 import type { SimpleItem } from "./utils";
 import { generateItems } from "./utils";
 
 export default function ExtraDataExample() {
+    const { effectiveMode } = useExampleScrollMode();
     const [selectedId, setSelectedId] = React.useState<string | undefined>();
     const data = React.useMemo(() => generateItems(100), []);
+    const useWindowScroll = isWindowScrollMode(effectiveMode);
+
     return (
         <LegendList<SimpleItem>
             data={data}
@@ -28,7 +32,8 @@ export default function ExtraDataExample() {
                     <div>Item {item.id}</div>
                 </button>
             )}
-            style={{ flex: 1, minHeight: 0 }}
+            style={getDefaultLegendListStyle(effectiveMode)}
+            useWindowScroll={useWindowScroll}
         />
     );
 }

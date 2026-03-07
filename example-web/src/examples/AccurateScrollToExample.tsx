@@ -2,15 +2,33 @@ import React from "react";
 
 import { LegendList, type LegendListRenderItemProps } from "@legendapp/list/react";
 import { ItemCard } from "./cards-renderItem";
+import {
+    getDefaultExampleWrapperStyle,
+    getDefaultLegendListStyle,
+    getStickyExampleChromeStyle,
+    isWindowScrollMode,
+    useExampleScrollMode,
+} from "./scrollMode";
 import type { SimpleItem } from "./utils";
 import { generateItems } from "./utils";
 
 export default function AccurateScrollToExample() {
+    const { effectiveMode } = useExampleScrollMode();
     const ref = React.useRef<any>(null);
     const data = React.useMemo(() => generateItems(1000), []);
+    const useWindowScroll = isWindowScrollMode(effectiveMode);
+
     return (
-        <div style={{ display: "flex", flex: 1, flexDirection: "column", gap: 8, minHeight: 0, paddingTop: 8 }}>
-            <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ ...getDefaultExampleWrapperStyle(effectiveMode), paddingTop: 8 }}>
+            <div
+                style={{
+                    ...getStickyExampleChromeStyle(effectiveMode),
+                    background: useWindowScroll ? "rgba(255, 255, 255, 0.96)" : undefined,
+                    display: "flex",
+                    gap: 8,
+                    paddingBottom: useWindowScroll ? 8 : 0,
+                }}
+            >
                 <button onClick={() => ref.current?.scrollToIndex?.({ animated: true, index: 300 })} type="button">
                     Scroll to 300
                 </button>
@@ -33,7 +51,8 @@ export default function AccurateScrollToExample() {
                         theme="light"
                     />
                 )}
-                style={{ borderRadius: 8, flex: 1, minHeight: 0 }}
+                style={getDefaultLegendListStyle(effectiveMode, { borderRadius: 8 })}
+                useWindowScroll={useWindowScroll}
             />
         </div>
     );

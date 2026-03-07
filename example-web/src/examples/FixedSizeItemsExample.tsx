@@ -1,13 +1,16 @@
 import React from "react";
 
 import { LegendList } from "@legendapp/list/react";
+import { getDefaultLegendListStyle, isWindowScrollMode, useExampleScrollMode } from "./scrollMode";
 import type { SimpleItem } from "./utils";
 import { generateItems } from "./utils";
 
 const ITEM_HEIGHT = 74;
 
 export default function FixedSizeItemsExample() {
+    const { effectiveMode } = useExampleScrollMode();
     const data = React.useMemo(() => generateItems(150), []);
+    const useWindowScroll = isWindowScrollMode(effectiveMode);
 
     return (
         <LegendList<SimpleItem>
@@ -32,7 +35,8 @@ export default function FixedSizeItemsExample() {
                     <div style={{ color: "#666", fontSize: 12 }}>id: {item.id}</div>
                 </div>
             )}
-            style={{ flex: 1, minHeight: 0 }}
+            style={getDefaultLegendListStyle(effectiveMode)}
+            useWindowScroll={useWindowScroll}
         />
     );
 }

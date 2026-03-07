@@ -1,16 +1,21 @@
 import React from "react";
 
 import { LegendList } from "@legendapp/list/react";
+import { getDefaultLegendListStyle, isWindowScrollMode, useExampleScrollMode } from "./scrollMode";
 
 type SimpleItem = { id: string };
 
 export default function MutableCellsExample() {
+    const { effectiveMode } = useExampleScrollMode();
     const [data] = React.useState<SimpleItem[]>(() => Array.from({ length: 60 }, (_, i) => ({ id: String(i) })));
     const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
+    const useWindowScroll = isWindowScrollMode(effectiveMode);
+
     return (
         <LegendList<SimpleItem>
             data={data}
             estimatedItemSize={100}
+            extraData={expanded}
             keyExtractor={(it) => it?.id}
             renderItem={({ item }: { item: SimpleItem }) => {
                 const isOpen = !!expanded[item.id];
@@ -36,7 +41,8 @@ export default function MutableCellsExample() {
                     </div>
                 );
             }}
-            style={{ flex: 1, minHeight: 0 }}
+            style={getDefaultLegendListStyle(effectiveMode)}
+            useWindowScroll={useWindowScroll}
         />
     );
 }

@@ -1,6 +1,13 @@
 import React from "react";
 
 import { LegendList, type LegendListRef } from "@legendapp/list/react";
+import {
+    getDefaultExampleWrapperStyle,
+    getDefaultLegendListStyle,
+    getStickyExampleChromeStyle,
+    isWindowScrollMode,
+    useExampleScrollMode,
+} from "./scrollMode";
 import type { SimpleItem } from "./utils";
 import { generateItems } from "./utils";
 
@@ -8,9 +15,11 @@ const ALWAYS_RENDER = { bottom: 2, top: 2 } as const;
 const ROW_HEIGHT = 56;
 
 export default function AlwaysRenderExample() {
+    const { effectiveMode } = useExampleScrollMode();
     const data = React.useMemo(() => generateItems(80), []);
     const listRef = React.useRef<LegendListRef | null>(null);
     const [mountedStatus, setMountedStatus] = React.useState({ bottom: false, top: false });
+    const useWindowScroll = isWindowScrollMode(effectiveMode);
 
     const updateMountedStatus = React.useCallback(() => {
         const state = listRef.current?.getState();
@@ -25,10 +34,11 @@ export default function AlwaysRenderExample() {
     }, [data.length]);
 
     return (
-        <div style={{ display: "flex", flex: 1, flexDirection: "column", gap: 12, minHeight: 0 }}>
+        <div style={getDefaultExampleWrapperStyle(effectiveMode, 12)}>
             <div
                 style={{
-                    background: "#fff",
+                    ...getStickyExampleChromeStyle(effectiveMode),
+                    background: useWindowScroll ? "rgba(255, 255, 255, 0.96)" : "#fff",
                     border: "1px solid #e5e5e5",
                     borderRadius: 8,
                     padding: "12px 14px",
@@ -80,7 +90,8 @@ export default function AlwaysRenderExample() {
                         </div>
                     );
                 }}
-                style={{ flex: 1, minHeight: 0 }}
+                style={getDefaultLegendListStyle(effectiveMode)}
+                useWindowScroll={useWindowScroll}
             />
         </div>
     );

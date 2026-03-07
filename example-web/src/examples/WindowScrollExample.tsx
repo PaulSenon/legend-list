@@ -1,6 +1,12 @@
 import React from "react";
 
 import { LegendList, type LegendListRef } from "@legendapp/list/react";
+import {
+    getDefaultExampleWrapperStyle,
+    getDefaultLegendListStyle,
+    isWindowScrollMode,
+    useExampleScrollMode,
+} from "./scrollMode";
 import type { SimpleItem } from "./utils";
 import { generateItems } from "./utils";
 
@@ -19,10 +25,12 @@ type DebugMetrics = {
 };
 
 export default function WindowScrollExample() {
+    const { effectiveMode } = useExampleScrollMode();
     const data = React.useMemo(() => generateItems(220), []);
     const listRef = React.useRef<LegendListRef | null>(null);
     const [selectedId, setSelectedId] = React.useState<string | undefined>();
     const [_showScrollToEnd, setShowScrollToEnd] = React.useState(true);
+    const useWindowScroll = isWindowScrollMode(effectiveMode);
     const [metrics, setMetrics] = React.useState<DebugMetrics>({
         contentLength: 0,
         end: 0,
@@ -107,7 +115,7 @@ export default function WindowScrollExample() {
     }, [updateMetricsFromState]);
 
     return (
-        <div>
+        <div style={getDefaultExampleWrapperStyle(effectiveMode, 16)}>
             <div
                 style={{
                     background: "#f8fafc",
@@ -118,8 +126,8 @@ export default function WindowScrollExample() {
             >
                 <h4 style={{ margin: "0 0 8px" }}>Window Scroll Example</h4>
                 <p style={{ color: "#334155", margin: 0 }}>
-                    This list uses <code>useWindowScroll</code>, so the page scrollbar drives the list instead of an
-                    internal scroll container.
+                    This list can switch between container and window scrolling. It is currently using
+                    <code>{useWindowScroll ? " useWindowScroll" : " the default scroll container"}</code>.
                 </p>
             </div>
 
@@ -171,7 +179,7 @@ export default function WindowScrollExample() {
                         </div>
                     </button>
                 )}
-                style={{ border: "1px solid #e2e8f0", borderRadius: 12 }}
+                style={getDefaultLegendListStyle(effectiveMode, { border: "1px solid #e2e8f0", borderRadius: 12 })}
                 useWindowScroll
             />
             <pre

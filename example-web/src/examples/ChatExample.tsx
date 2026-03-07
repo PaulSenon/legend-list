@@ -2,6 +2,13 @@
 import React from "react";
 
 import { LegendList, type LegendListRef, type LegendListRenderItemProps } from "@legendapp/list/react";
+import {
+    getDefaultExampleWrapperStyle,
+    getDefaultLegendListStyle,
+    getStickyExampleChromeStyle,
+    isWindowScrollMode,
+    useExampleScrollMode,
+} from "./scrollMode";
 
 type Message = {
     id: string;
@@ -134,11 +141,13 @@ const defaultChatMessages: Message[] = defaultChatMessagesSeed.map((message, ind
 );
 
 export default function ChatExample() {
+    const { effectiveMode } = useExampleScrollMode();
     const [messages, setMessages] = React.useState<Message[]>(defaultChatMessages);
     const [inputText, setInputText] = React.useState("");
     const [showScrollToEnd, setShowScrollToEnd] = React.useState(false);
     const listRef = React.useRef<LegendListRef | null>(null);
     const botReplyTimeouts = React.useRef<ReturnType<typeof setTimeout>[]>([]);
+    const useWindowScroll = isWindowScrollMode(effectiveMode);
 
     React.useEffect(() => {
         return () => {
@@ -198,7 +207,7 @@ export default function ChatExample() {
     }, [updateScrollToEndVisibility]);
 
     return (
-        <div style={{ display: "flex", flex: 1, flexDirection: "column", gap: 12, minHeight: 0 }}>
+        <div style={getDefaultExampleWrapperStyle(effectiveMode, 12)}>
             <LegendList<Message>
                 alignItemsAtEnd
                 contentContainerStyle={{ paddingLeft: 16, paddingRight: 16, paddingBottom: 16, paddingTop: 16 }}
@@ -243,13 +252,14 @@ export default function ChatExample() {
                         </span>
                     </div>
                 )}
-                style={{ flex: 1, minHeight: 0 }}
+                style={getDefaultLegendListStyle(effectiveMode, { width: "100%" })}
+                useWindowScroll={useWindowScroll}
             />
             {showScrollToEnd ? (
                 <button
                     onClick={scrollToEnd}
                     style={{
-                        position: "absolute",
+                        position: useWindowScroll ? "fixed" : "absolute",
                         right: 16,
                         bottom: 96,
                         borderRadius: 9999,
@@ -267,7 +277,16 @@ export default function ChatExample() {
             ) : null}
             <form
                 onSubmit={handleSubmit}
-                style={{ alignItems: "center", borderTop: "1px solid #e2e8f0", display: "flex", gap: 12, padding: 12 }}
+                style={{
+                    ...getStickyExampleChromeStyle(effectiveMode, 16),
+                    alignItems: "center",
+                    background: useWindowScroll ? "rgba(255, 255, 255, 0.98)" : undefined,
+                    borderTop: "1px solid #e2e8f0",
+                    display: "flex",
+                    gap: 12,
+                    padding: 12,
+                    ...(useWindowScroll ? { bottom: 0, top: "auto", zIndex: 30 } : {}),
+                }}
             >
                 <input
                     onChange={(event) => setInputText(event.target.value)}
