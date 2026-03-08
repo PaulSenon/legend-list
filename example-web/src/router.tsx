@@ -1,6 +1,8 @@
 import React from "react";
 
 import { createRootRoute, createRoute, createRouter, Outlet, useRouter, useRouterState } from "@tanstack/react-router";
+import "./router.css";
+
 import AccurateScrollToExample from "./examples/AccurateScrollToExample";
 import AccurateScrollToHugeExample from "./examples/AccurateScrollToHugeExample";
 import AddToEndExample from "./examples/AddToEndExample";
@@ -63,25 +65,32 @@ export const EXAMPLES: ExampleRoute[] = [
 function SidebarLayout() {
     const router = useRouter();
     const pathname = useRouterState({ select: (s) => s.location.pathname });
-    const SIDEBAR_WIDTH = 260;
-    const CONTENT_OFFSET = SIDEBAR_WIDTH + 28;
     const activeExample = EXAMPLES.find((example) => `/${example.path}` === pathname);
     const isWindowScrollExample = !!activeExample?.usesWindowScroll;
+    const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+
+    React.useEffect(() => {
+        setIsSidebarOpen(false);
+    }, [pathname]);
 
     return (
-        <div style={{ minHeight: "100vh" }}>
-            <aside
-                style={{
-                    borderRight: "1px solid #eee",
-                    bottom: 16,
-                    left: 16,
-                    overflowY: "auto",
-                    paddingRight: 12,
-                    position: "fixed",
-                    top: 16,
-                    width: SIDEBAR_WIDTH,
-                }}
+        <div className={isSidebarOpen ? "sidebar-layout sidebar-layout--open" : "sidebar-layout"}>
+            <button
+                className="sidebar-layout__toggle"
+                onClick={() => setIsSidebarOpen((value) => !value)}
+                type="button"
             >
+                Menu
+            </button>
+            {isSidebarOpen ? (
+                <button
+                    aria-label="Close navigation menu"
+                    className="sidebar-layout__overlay"
+                    onClick={() => setIsSidebarOpen(false)}
+                    type="button"
+                />
+            ) : null}
+            <aside className="sidebar-layout__aside">
                 <h1 style={{ marginBottom: 12, marginTop: 0 }}>Legend List Web Example</h1>
                 <h2 style={{ marginTop: 0 }}>Legend List Web Examples</h2>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -95,6 +104,7 @@ function SidebarLayout() {
                                 onClick={(e) => {
                                     e.preventDefault();
                                     router.navigate({ to: href as any });
+                                    setIsSidebarOpen(false);
                                 }}
                                 style={{
                                     background: isActive ? "#eef6ff" : "#fff",
@@ -112,15 +122,11 @@ function SidebarLayout() {
                 </div>
             </aside>
             <div
-                style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    marginLeft: CONTENT_OFFSET,
-                    ...(isWindowScrollExample
-                        ? { minHeight: "calc(100vh - 32px)" }
-                        : { height: "calc(100vh - 32px)", overflow: "hidden" }),
-                    minWidth: 0,
-                }}
+                className={
+                    isWindowScrollExample
+                        ? "sidebar-layout__content sidebar-layout__content--window"
+                        : "sidebar-layout__content sidebar-layout__content--fixed"
+                }
             >
                 <Outlet />
             </div>
